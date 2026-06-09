@@ -15,18 +15,15 @@ export default function EdificioPage() {
   const [cargando, setCargando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
 
-  const cargarPublicaciones = async () => {
-    if (!edificioId) return;
-    const { data, error } = await supabase
-      .from('publicaciones')
-      .select('*, perfiles(nombre_completo)')
-      .eq('edificio_id', edificioId)
-      .eq('tipo', tipoActivo)
-      .eq('activo', true)
-      .order('created_at', { ascending: false });
-    if (!error) setPublicaciones(data);
-    setCargando(false);
-  };
+const cargarPublicaciones = async () => {
+  const { data } = await supabase
+    .from('publicaciones')
+    .select('*, perfiles(nombre_completo)')
+    .eq('edificio_id', edificioId) // 👈 Filtro clave
+    .eq('activo', true)
+    .order('created_at', { ascending: false });
+  setPublicaciones(data);
+};
 
 useEffect(() => {
   // Una vez que estamos en el edificio, borramos el redirect guardado

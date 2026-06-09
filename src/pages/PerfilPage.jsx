@@ -12,7 +12,6 @@ export default function PerfilPage() {
 
   useEffect(() => {
     if (!user) return;
-    // Cargar perfil con el nombre del edificio (solo lectura)
     supabase
       .from('perfiles')
       .select('*, edificios(nombre)')
@@ -28,7 +27,7 @@ export default function PerfilPage() {
   }, [user]);
 
   const actualizarPerfil = async () => {
-    // Solo actualiza nombre y whatsapp, NUNCA el edificio_id
+    // Solo actualiza nombre y whatsapp, NUNCA el edificio
     const { error } = await supabase
       .from('perfiles')
       .update({
@@ -76,9 +75,7 @@ export default function PerfilPage() {
           >
             Guardar cambios
           </button>
-          {mensaje && (
-            <p className="text-green-600 text-sm text-center animate-fade-in">{mensaje}</p>
-          )}
+          {mensaje && <p className="text-green-600 text-sm text-center animate-fade-in">{mensaje}</p>}
         </div>
       </div>
     </div>
