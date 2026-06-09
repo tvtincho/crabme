@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Scroll suave */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-md bg-white/30 dark:bg-black/40 rounded-2xl border border-white/20 shadow-lg;
+  }
+  .glass-header {
+    @apply backdrop-blur-lg bg-white/50 dark:bg-darkBg/80 border-b border-gray-200 dark:border-gray-800;
+  }
+  .crab-gradient {
+    @apply bg-gradient-to-r from-coral to-crab;
+  }
+  .input-glass {
+    @apply w-full p-3 rounded-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-coral/50 transition;
+  }
+}
