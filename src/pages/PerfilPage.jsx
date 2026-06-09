@@ -7,29 +7,27 @@ export default function PerfilPage() {
   const { user } = useAuth();
   const [nombre, setNombre] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
-  const [edificioId, setEdificioId] = useState('');
-  const [edificios, setEdificios] = useState([]);
+  const [edificioNombre, setEdificioNombre] = useState('');
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('perfiles').select('*').eq('id', user.id).single().then(({ data }) => {
-      if (data) {
-        setNombre(data.nombre_completo || '');
-        setWhatsapp(data.numero_whatsapp || '');
-        setEdificioId(data.edificio_id || '');
-      }
-    });
-    supabase.from('edificios').select('id, nombre').then(({ data }) => setEdificios(data || []));
+    // Cargar perfil
+    supabase.from('perfiles').select('*, edificios(nombre)').eq('id', user.id).single()
+      .then(({ data }) => {
+        if (data) {
+          setNombre(data.nombre_completo || '');
+          setWhatsapp(data.numero_whatsapp || '');
+          setEdificioNombre(data.edificios?.nombre || 'No asignado');
+        }
+      });
   }, [user]);
 
   const actualizarPerfil = async () => {
-    const { error } = await supabase.from('perfiles').upsert({
-      id: user.id,
+    const { error } = await supabase.from('perfiles').update({
       nombre_completo: nombre,
       numero_whatsapp: whatsapp,
-      edificio_id: edificioId || null,
-    });
+    }).eq('id', user.id);
     if (error) setMensaje('Error: ' + error.message);
     else setMensaje('✅ Perfil actualizado');
     setTimeout(() => setMensaje(''), 3000);
@@ -46,19 +44,18 @@ export default function PerfilPage() {
             placeholder="Nombre completo"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            className="input-glass"
+            className="input-glass w-full"
           />
           <input
             type="tel"
             placeholder="WhatsApp (ej: 56912345678)"
             value={whatsapp}
             onChange={(e) => setWhatsapp(e.target.value)}
-            className="input-glass"
+            className="input-glass w-full"
           />
-          <select value={edificioId} onChange={(e) => setEdificioId(e.target.value)} className="input-glass">
-            <option value="">Selecciona tu edificio</option>
-            {edificios.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-          </select>
+          <div className="text-sm text-gray-500">
+            <span className="font-medium">Edificio asignado:</span> {edificioNombre}
+          </div>
           <button
             onClick={actualizarPerfil}
             className="w-full crab-gradient text-white py-2 rounded-xl font-semibold shadow-md hover:shadow-lg transition"

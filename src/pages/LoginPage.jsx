@@ -1,28 +1,27 @@
-// src/pages/LoginPage.jsx
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
-  const [edificioId, setEdificioId] = useState('');
+  const [redirectPath, setRedirectPath] = useState('/');
+  const location = useLocation();
 
   useEffect(() => {
-    // Obtener el edificio de la URL si existe (ej: ?redirect=/edificio/123)
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const redirect = params.get('redirect');
     if (redirect && redirect.startsWith('/edificio/')) {
-      const id = redirect.split('/')[2];
-      setEdificioId(id);
+      setRedirectPath(redirect);
+      localStorage.setItem('redirectAfterLogin', redirect);
     } else {
-      // Si no hay redirect, usar un edificio por defecto (opcional)
-      setEdificioId('e179d7a8-efde-4eaf-aa6d-411c5586bdc7'); // Cambia por un ID real
+      const saved = localStorage.getItem('redirectAfterLogin');
+      if (saved) setRedirectPath(saved);
     }
-  }, []);
+  }, [location]);
 
   const handleGoogleLogin = async () => {
-    if (!edificioId) return;
-    // Usa la URL actual (origen) y añade la ruta del edificio
-    const redirectTo = `${window.location.origin}/edificio/${edificioId}`;
+    const redirectTo = window.location.origin + redirectPath;
+    console.log('Redirigiendo a Google con:', redirectTo);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo }
