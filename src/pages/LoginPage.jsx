@@ -1,39 +1,34 @@
+// src/pages/LoginPage.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [redirectPath, setRedirectPath] = useState('/');
+  const [edificioId, setEdificioId] = useState('');
 
   useEffect(() => {
-    // Obtener la URL a redirigir después del login
-    const params = new URLSearchParams(location.search);
+    // Obtener el edificio de la URL si existe (ej: ?redirect=/edificio/123)
+    const params = new URLSearchParams(window.location.search);
     const redirect = params.get('redirect');
-    if (redirect) {
-      setRedirectPath(redirect);
-      // Guardar en localStorage por si acaso (para Google OAuth que pierde el query)
-      localStorage.setItem('redirectAfterLogin', redirect);
+    if (redirect && redirect.startsWith('/edificio/')) {
+      const id = redirect.split('/')[2];
+      setEdificioId(id);
     } else {
-      // Si no hay redirect, usar el último guardado o el edificio por defecto
-      const saved = localStorage.getItem('redirectAfterLogin');
-      if (saved) setRedirectPath(saved);
+      // Si no hay redirect, usar un edificio por defecto (opcional)
+      setEdificioId('e179d7a8-efde-4eaf-aa6d-411c5586bdc7'); // Cambia por un ID real
     }
-  }, [location]);
+  }, []);
 
   const handleGoogleLogin = async () => {
-    // Construir la URL completa a donde volver después del login
-    const redirectUrl = window.location.origin + redirectPath;
+    if (!edificioId) return;
+    // Usa la URL actual (origen) y añade la ruta del edificio
+    const redirectTo = `${window.location.origin}/edificio/${edificioId}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: redirectUrl }
+      options: { redirectTo }
     });
     if (error) setError(error.message);
   };
-
-  // También puedes mantener el login con email si quieres, pero ya está deshabilitado
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-coral/20 to-white dark:from-darkBg dark:to-darkBg p-4">
