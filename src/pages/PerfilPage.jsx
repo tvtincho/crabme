@@ -7,13 +7,17 @@ export default function PerfilPage() {
   const { user } = useAuth();
   const [nombre, setNombre] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
-  const [edificioNombre, setEdificioNombre] = useState('');
+  const [edificioNombre, setEdificioNombre] = useState('No asignado');
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
     if (!user) return;
-    // Cargar perfil
-    supabase.from('perfiles').select('*, edificios(nombre)').eq('id', user.id).single()
+    // Cargar perfil con el nombre del edificio (solo lectura)
+    supabase
+      .from('perfiles')
+      .select('*, edificios(nombre)')
+      .eq('id', user.id)
+      .single()
       .then(({ data }) => {
         if (data) {
           setNombre(data.nombre_completo || '');
@@ -24,13 +28,21 @@ export default function PerfilPage() {
   }, [user]);
 
   const actualizarPerfil = async () => {
-    const { error } = await supabase.from('perfiles').update({
-      nombre_completo: nombre,
-      numero_whatsapp: whatsapp,
-    }).eq('id', user.id);
-    if (error) setMensaje('Error: ' + error.message);
-    else setMensaje('✅ Perfil actualizado');
-    setTimeout(() => setMensaje(''), 3000);
+    // Solo actualiza nombre y whatsapp, NUNCA el edificio_id
+    const { error } = await supabase
+      .from('perfiles')
+      .update({
+        nombre_completo: nombre,
+        numero_whatsapp: whatsapp,
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      setMensaje('Error: ' + error.message);
+    } else {
+      setMensaje('✅ Perfil actualizado');
+      setTimeout(() => setMensaje(''), 3000);
+    }
   };
 
   return (
@@ -53,8 +65,10 @@ export default function PerfilPage() {
             onChange={(e) => setWhatsapp(e.target.value)}
             className="input-glass w-full"
           />
-          <div className="text-sm text-gray-500">
-            <span className="font-medium">Edificio asignado:</span> {edificioNombre}
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-medium">🏢 Edificio asignado:</span> {edificioNombre}
+            <br />
+            <span className="text-xs text-gray-400">(Solo el administrador puede cambiar tu edificio)</span>
           </div>
           <button
             onClick={actualizarPerfil}
@@ -62,7 +76,9 @@ export default function PerfilPage() {
           >
             Guardar cambios
           </button>
-          {mensaje && <p className="text-green-600 text-sm text-center animate-fade-in">{mensaje}</p>}
+          {mensaje && (
+            <p className="text-green-600 text-sm text-center animate-fade-in">{mensaje}</p>
+          )}
         </div>
       </div>
     </div>
